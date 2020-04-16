@@ -4,6 +4,7 @@ namespace Rest\View;
 
 use Cake\Core\Exception\Exception;
 use Cake\View\View;
+use Cake\Core\Configure;
 
 /**
  * Json View
@@ -12,6 +13,13 @@ use Cake\View\View;
  */
 class JsonView extends View
 {
+
+    /**
+     * List of special view vars.
+     *
+     * @var array
+     */
+    protected $_specialVars = ['_serialize', '_jsonOptions', '_jsonp'];
 
     /**
      * Renders api response
@@ -41,12 +49,106 @@ class JsonView extends View
             $content['status'] = "NOK";
         }
 
-        $content['result'] = $this->viewVars;
+		/**
+		 Auto serialization
+		**/
+        if ( !@$this->viewVars['_serialize'] ){
 
+            foreach( $this->viewVars as $name => $values ){
+                if ( $name != 'status' ){
+                    $this->viewVars['_serialize'][] = $name;
+                }
+            }
+
+            if ( count($this->viewVars['_serialize']) === 1 ){
+                $this->viewVars['_serialize'] = $this->viewVars['_serialize'][0];
+            }
+        }
+
+        $content['result'] = $this->renderResult($this->viewVars);
+		/**
+		 / Auto serialization
+		**/
+		
         $this->Blocks->set('content', $this->renderLayout(json_encode($content), $this->layout));
 
         $this->hasRendered = true;
 
         return $this->Blocks->get('content');
+    }
+
+    public function renderResult($view = null, $layout = null)
+    {
+        $serialize = false;
+        if (isset($this->viewVars['_serialize'])) {
+            $serialize = $this->viewVars['_serialize'];
+        }
+
+        if ($serialize !== false) {
+            $result = $this->_serialize($serialize);
+            if ($result === false) {
+                throw new RuntimeException('Serialization of View data failed.');
+            }
+
+            return (string)$result;
+        }
+        if ($view !== false && $this->_getViewFileName($view)) {
+            return parent::render($view, false);
+        }
+    }
+
+	/* SerializedView Methods */
+    protected function _serialize($serialize)
+    {
+        $data = $this->_dataToSerialize($serialize);
+
+        $jsonOptions = JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_AMP | JSON_HEX_QUOT |
+            JSON_PARTIAL_OUTPUT_ON_ERROR;
+
+        if (isset($this->viewVars['_jsonOptions'])) {
+            if ($this->viewVars['_jsonOptions'] === false) {
+                $jsonOptions = 0;
+            } else {
+                $jsonOptions = $this->viewVars['_jsonOptions'];
+            }
+        }
+
+        if (Configure::read('debug')) {
+            $jsonOptions |= JSON_PRETTY_PRINT;
+        }
+
+        return json_encode($data, $jsonOptions);
+    }
+
+    protected function _dataToSerialize($serialize = true)
+    {
+        if ($serialize === true) {
+            $data = array_diff_key(
+                $this->viewVars,
+                array_flip($this->_specialVars)
+            );
+
+            if (empty($data)) {
+                return null;
+            }
+
+            return $data;
+        }
+
+        if (is_array($serialize)) {
+            $data = [];
+            foreach ($serialize as $alias => $key) {
+                if (is_numeric($alias)) {
+                    $alias = $key;
+                }
+                if (array_key_exists($key, $this->viewVars)) {
+                    $data[$alias] = $this->viewVars[$key];
+                }
+            }
+
+            return !empty($data) ? $data : null;
+        }
+
+        return isset($this->viewVars[$serialize]) ? $this->viewVars[$serialize] : null;
     }
 }
