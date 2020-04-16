@@ -32,8 +32,7 @@ class JsonView extends View
     public function render($view = null, $layout = null)
     {
         if ($this->hasRendered) {
-            
-            return null ;
+            return null;
         }
 
         $this->response = $this->response->withType('json');
@@ -41,30 +40,27 @@ class JsonView extends View
         $this->layout = "Rest.rest";
 
         $content = [
-            'status' => 'OK'
+            'status' => 'OK',
         ];
 
         $code = $this->response->getStatusCode();
 
-        
         if ($code != 200) {
             $content['status'] = "NOK";
         }
 
-        if ( !isset($this->viewVars['_serialize']) ){
-
-            foreach( $this->viewVars as $name => $values ){
-                if ( $name != 'status' ){
+        if (!isset($this->viewVars['_serialize'])) {
+            foreach ($this->viewVars as $name => $values) {
+                if ($name != 'status') {
                     $this->viewVars['_serialize'][] = $name;
                 }
             }
 
-            if ( isset($this->viewVars['_serialize']) ){
-                if ( count($this->viewVars['_serialize']) === 1 ){
+            if (isset($this->viewVars['_serialize'])) {
+                if (count($this->viewVars['_serialize']) === 1) {
                     $this->viewVars['_serialize'] = $this->viewVars['_serialize'][0];
                 }
-            }
-            else{
+            } else {
                 $content['status'] = "NOK";
                 $this->viewVars['message'] = ['message' => 'empty response'];
                 $this->viewVars['_serialize'] = 'message';
