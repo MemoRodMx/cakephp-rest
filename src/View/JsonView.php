@@ -50,14 +50,24 @@ class JsonView extends View
             $content['status'] = "NOK";
         }
 
+<<<<<<< HEAD
         if ( !isset($this->viewVars['_serialize']) ){
 
             foreach( $this->viewVars as $name => $values ){
                 if ( $name != 'status' ){
+=======
+        /**
+         Auto serialization
+        **/
+        if (!@$this->viewVars['_serialize']) {
+            foreach ($this->viewVars as $name => $values) {
+                if ($name != 'status') {
+>>>>>>> bdef4fea752e8ec2403f935fc45a6da6f958ffb9
                     $this->viewVars['_serialize'][] = $name;
                 }
             }
 
+<<<<<<< HEAD
             if ( isset($this->viewVars['_serialize']) ){
                 if ( count($this->viewVars['_serialize']) === 1 ){
                     $this->viewVars['_serialize'] = $this->viewVars['_serialize'][0];
@@ -67,10 +77,20 @@ class JsonView extends View
                 $content['status'] = "NOK";
                 $this->viewVars['message'] = ['message' => 'empty response'];
                 $this->viewVars['_serialize'] = 'message';
+=======
+            if (count($this->viewVars['_serialize']) === 1) {
+                $this->viewVars['_serialize'] = $this->viewVars['_serialize'][0];
+>>>>>>> bdef4fea752e8ec2403f935fc45a6da6f958ffb9
             }
         }
 
         $content['result'] = $this->renderResult($this->viewVars);
+<<<<<<< HEAD
+=======
+        /**
+         / Auto serialization
+        **/
+>>>>>>> bdef4fea752e8ec2403f935fc45a6da6f958ffb9
 
         $this->Blocks->set('content', $this->renderLayout(json_encode($content), $this->layout));
 
@@ -107,6 +127,7 @@ class JsonView extends View
         }
     }
 
+<<<<<<< HEAD
     /**
      * Serialize view vars
      *
@@ -118,6 +139,10 @@ class JsonView extends View
      *   that need(s) to be serialized. If true all available view variables.
      * @return string|false The serialized data, or boolean false if not serializable.
      */
+=======
+    /* SerializedView Methods */
+
+>>>>>>> bdef4fea752e8ec2403f935fc45a6da6f958ffb9
     protected function _serialize($serialize)
     {
         $data = $this->_dataToSerialize($serialize);
