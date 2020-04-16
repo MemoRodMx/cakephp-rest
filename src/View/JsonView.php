@@ -49,27 +49,26 @@ class JsonView extends View
             $content['status'] = "NOK";
         }
 
-		/**
-		 Auto serialization
-		**/
-        if ( !@$this->viewVars['_serialize'] ){
-
-            foreach( $this->viewVars as $name => $values ){
-                if ( $name != 'status' ){
+        /**
+         Auto serialization
+        **/
+        if (!@$this->viewVars['_serialize']) {
+            foreach ($this->viewVars as $name => $values) {
+                if ($name != 'status') {
                     $this->viewVars['_serialize'][] = $name;
                 }
             }
 
-            if ( count($this->viewVars['_serialize']) === 1 ){
+            if (count($this->viewVars['_serialize']) === 1) {
                 $this->viewVars['_serialize'] = $this->viewVars['_serialize'][0];
             }
         }
 
         $content['result'] = $this->renderResult($this->viewVars);
-		/**
-		 / Auto serialization
-		**/
-		
+        /**
+         / Auto serialization
+        **/
+
         $this->Blocks->set('content', $this->renderLayout(json_encode($content), $this->layout));
 
         $this->hasRendered = true;
@@ -97,7 +96,8 @@ class JsonView extends View
         }
     }
 
-	/* SerializedView Methods */
+    /* SerializedView Methods */
+
     protected function _serialize($serialize)
     {
         $data = $this->_dataToSerialize($serialize);
