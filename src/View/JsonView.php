@@ -45,14 +45,12 @@ class JsonView extends View
 
         $code = $this->response->getStatusCode();
 
+        
         if ($code != 200) {
             $content['status'] = "NOK";
         }
 
-		/**
-		 Auto serialization
-		**/
-        if ( !@$this->viewVars['_serialize'] ){
+        if ( !isset($this->viewVars['_serialize']) ){
 
             foreach( $this->viewVars as $name => $values ){
                 if ( $name != 'status' ){
@@ -60,16 +58,20 @@ class JsonView extends View
                 }
             }
 
-            if ( count($this->viewVars['_serialize']) === 1 ){
-                $this->viewVars['_serialize'] = $this->viewVars['_serialize'][0];
+            if ( isset($this->viewVars['_serialize']) ){
+                if ( count($this->viewVars['_serialize']) === 1 ){
+                    $this->viewVars['_serialize'] = $this->viewVars['_serialize'][0];
+                }
+            }
+            else{
+                $content['status'] = "NOK";
+                $this->viewVars['message'] = ['message' => 'empty response'];
+                $this->viewVars['_serialize'] = 'message';
             }
         }
 
         $content['result'] = $this->renderResult($this->viewVars);
-		/**
-		 / Auto serialization
-		**/
-		
+
         $this->Blocks->set('content', $this->renderLayout(json_encode($content), $this->layout));
 
         $this->hasRendered = true;
@@ -77,6 +79,14 @@ class JsonView extends View
         return $this->Blocks->get('content');
     }
 
+    /**
+     * Cumstom Render for api response
+     *
+     * @param string|null $view Name of view file to use
+     * @param string|null $layout Layout to use.
+     * @return string|null Rendered content or null if content already rendered and returned earlier.
+     * @throws Exception If there is an error in the view.
+     */
     public function renderResult($view = null, $layout = null)
     {
         $serialize = false;
@@ -97,7 +107,17 @@ class JsonView extends View
         }
     }
 
-	/* SerializedView Methods */
+    /**
+     * Serialize view vars
+     *
+     * ### Special parameters
+     * `_jsonOptions` You can set custom options for json_encode() this way,
+     *   e.g. `JSON_HEX_TAG | JSON_HEX_APOS`.
+     *
+     * @param array|string|bool $serialize The name(s) of the view variable(s)
+     *   that need(s) to be serialized. If true all available view variables.
+     * @return string|false The serialized data, or boolean false if not serializable.
+     */
     protected function _serialize($serialize)
     {
         $data = $this->_dataToSerialize($serialize);
@@ -120,6 +140,13 @@ class JsonView extends View
         return json_encode($data, $jsonOptions);
     }
 
+    /**
+     * Returns data to be serialized.
+     *
+     * @param array|string|bool $serialize The name(s) of the view variable(s) that
+     *   need(s) to be serialized. If true all available view variables will be used.
+     * @return mixed The data to serialize.
+     */
     protected function _dataToSerialize($serialize = true)
     {
         if ($serialize === true) {
