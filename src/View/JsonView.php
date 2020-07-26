@@ -61,7 +61,7 @@ class JsonView extends View
                     $this->viewVars['_serialize'] = $this->viewVars['_serialize'][0];
                 }
             } else {
-                $content['status'] = "NOK";
+                $content['status'] = 'NOK';
                 $this->viewVars['message'] = ['message' => 'empty response'];
                 $this->viewVars['_serialize'] = 'message';
             }
@@ -82,7 +82,7 @@ class JsonView extends View
      * @param string|null $view Name of view file to use
      * @param string|null $layout Layout to use.
      * @return string|null Rendered content or null if content already rendered and returned earlier.
-     * @throws Exception If there is an error in the view.
+     * @throws \Cake\Core\Exception\Exception If there is an error in the view.
      */
     public function renderResult($view = null, $layout = null)
     {
@@ -173,6 +173,6 @@ class JsonView extends View
             return !empty($data) ? $data : null;
         }
 
-        return isset($this->viewVars[$serialize]) ? $this->viewVars[$serialize] : null;
+        return $this->viewVars[$serialize] ?? null;
     }
 }
